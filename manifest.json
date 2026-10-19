@@ -1,15 +1,21 @@
 {
   "manifest_version": 3,
   "name": "Cricinfo Tweaks",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Makes Cricinfo nicer to read. Removes ads.",
+  "permissions": ["storage"],
+  "action": {
+    "default_title": "Cricinfo Tweaks",
+    "default_popup": "src/popup.html"
+  },
   "content_scripts": [
     {
       "matches": [
         "https://www.cricinfo.com/*",
         "https://www.espncricinfo.com/*"
       ],
-      "css": ["src/hide-ads.css"],
+      "css": ["src/hide-ads.css", "src/commentary.css"],
+      "js": ["src/settings.js", "src/content.js"],
       "run_at": "document_start",
       "all_frames": false
     }

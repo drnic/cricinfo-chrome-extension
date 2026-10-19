@@ -1,0 +1,9 @@
+/* Ball-by-ball headline, e.g. "Cummins to Ackerman, no run". The DOM text is in
+   normal case; the site forces it to upper case with .ds-uppercase. */
+html.ct-commentary-normal-case .ds-text-article-body-1 .ds-text-overline-1.ds-uppercase.ds-text-color-text-secondary {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  /* Up from 12px: lower case reads smaller than caps next to the 16px body text */
+  font-size: 14px !important;
+  line-height: 18px !important;
+}
