@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Validate the extension, build a zip for the Chrome Web Store, and print the upload URL.
+#
+# Usage: bin/package
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+DASHBOARD_URL="https://chrome.google.com/webstore/devconsole"
+errors=0
+fail() { echo "  ✗ $*" >&2; errors=$((errors + 1)); }
+warn() { echo "  ! $*" >&2; }
+ok() { echo "  ✓ $*"; }
+
+for cmd in jq zip file; do
+  command -v "$cmd" >/dev/null || { echo "Missing required command: $cmd" >&2; exit 1; }
+done
+
+echo "Validating manifest.json"
+jq empty manifest.json 2>/dev/null || { fail "manifest.json is not valid JSON"; exit 1; }
+
+name=$(jq -r '.name // ""' manifest.json)
+version=$(jq -r '.version // ""' manifest.json)
+description=$(jq -r '.description // ""' manifest.json)
+
+[[ $(jq -r '.manifest_version' manifest.json) == 3 ]] && ok "manifest_version 3" || fail "manifest_version must be 3"
+[[ -n $name && ${#name} -le 75 ]] && ok "name: $name" || fail "name must be 1-75 characters"
+[[ -n $description && ${#description} -le 132 ]] && ok "description (${#description}/132 chars)" || fail "description must be 1-132 characters"
+[[ $version =~ ^[0-9]+(\.[0-9]+){0,3}$ ]] && ok "version: $version" || fail "version must be 1-4 dot-separated integers"
+
+echo "Checking referenced files"
+files=$(jq -r '
+  [ .icons[]?, .action.default_icon[]?, .action.default_popup?,
+    .content_scripts[]?.js[]?, .content_scripts[]?.css[]? ]
+  | map(select(. != null)) | unique | .[]' manifest.json)
+for f in $files; do
+  [[ -f $f ]] && ok "$f" || fail "$f is listed in manifest.json but does not exist"
+done
+
+echo "Checking icon sizes"
+for size in $(jq -r '.icons | keys[]' manifest.json); do
+  f=$(jq -r --arg s "$size" '.icons[$s]' manifest.json)
+  [[ -f $f ]] || continue
+  if file "$f" | grep -q "PNG image data, $size x $size"; then
+    ok "$f is ${size}x${size} PNG"
+  else
+    fail "$f must be a ${size}x${size} PNG ($(file -b "$f"))"
+  fi
+done
+jq -e '.icons["128"]' manifest.json >/dev/null || fail "a 128x128 icon is required by the Chrome Web Store"
+
+if command -v node >/dev/null; then
+  echo "Checking JavaScript syntax"
+  for f in src/*.js; do
+    node --check "$f" 2>/dev/null && ok "$f" || fail "$f has a syntax error (run: node --check $f)"
+  done
+fi
+
+echo "Checking git"
+[[ -z $(git status --porcelain) ]] && ok "working tree clean" || warn "working tree has uncommitted changes"
+if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+  [[ $(git rev-parse "v$version^{commit}") == $(git rev-parse HEAD) ]] \
+    || warn "tag v$version already exists on another commit; bump version in manifest.json"
+fi
+
+if ((errors > 0)); then
+  echo >&2
+  echo "$errors problem(s) found. No zip created." >&2
+  exit 1
+fi
+
+slug=$(echo "$name" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/-$//')
+zip_path="dist/$slug-$version.zip"
+mkdir -p dist
+rm -f "$zip_path"
+zip -qr "$zip_path" manifest.json src icons -x '*.DS_Store' 'icons/*.svg'
+
+echo
+echo "Created $zip_path ($(du -h "$zip_path" | cut -f1 | tr -d ' '))"
+echo
+echo "Upload it at: $DASHBOARD_URL"
+echo "  New item:  click \"New item\" and choose the zip"
+echo "  Update:    open the item, then Package > Upload new package"
+echo
+echo "After it is published, tag this release: git tag v$version && git push --tags"
