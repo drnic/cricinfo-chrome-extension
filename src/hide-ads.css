@@ -1,0 +1,18 @@
+/* Grey band that holds the top banner ad on the home page and match pages */
+.ci-v2-ad-banner-top,
+
+/* Google Publisher Tag ad slots, e.g. #ad-bannertop-123-cnt, #ad-incontent2-456 */
+.ci-ad-gpt-slot-cnt,
+.adSlotCnt,
+.adSlot,
+div[id^="ad-"][id$="-cnt"],
+div[id^="google_ads_iframe_"],
+iframe[id^="google_ads_iframe_"],
+
+/* AdSense, Taboola and Outbrain units */
+ins.adsbygoogle,
+[id^="taboola-"],
+.trc_related_container,
+.OUTBRAIN {
+  display: none !important;
+}
