@@ -4,9 +4,19 @@
   "version": "0.2.0",
   "description": "Makes Cricinfo nicer to read. Removes ads.",
   "permissions": ["storage"],
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
   "action": {
     "default_title": "Cricinfo Tweaks",
-    "default_popup": "src/popup.html"
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
   },
   "content_scripts": [
     {

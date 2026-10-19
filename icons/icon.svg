@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <radialGradient id="leather" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#e8423a"/>
+      <stop offset="0.6" stop-color="#b3141b"/>
+      <stop offset="1" stop-color="#6e0a10"/>
+    </radialGradient>
+    <clipPath id="ball"><circle cx="64" cy="64" r="58"/></clipPath>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="url(#leather)"/>
+  <g clip-path="url(#ball)" fill="none" stroke="#fbeee0" stroke-linecap="round">
+    <path d="M18 22 C 52 46, 76 82, 110 106" stroke-width="7"/>
+    <path d="M10 34 C 44 58, 68 94, 102 118" stroke-width="2.5" stroke-dasharray="4 5"/>
+    <path d="M26 10 C 60 34, 84 70, 118 94" stroke-width="2.5" stroke-dasharray="4 5"/>
+  </g>
+  <ellipse cx="44" cy="38" rx="14" ry="8" fill="#fff" opacity="0.25" transform="rotate(-35 44 38)"/>
+</svg>
